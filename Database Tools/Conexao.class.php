@@ -132,8 +132,7 @@ class Conexao {
         if ($this -> has_error())
             return false;
 
-        $this -> u64key = base64_decode($p);
-        ;
+        $this -> u64key = base64_decode($p); ;
         $this -> u64data = base64_decode($k);
         $this -> databaseData = explode(",", $this -> decrypt($this -> u64data, $this -> u64key));
     }
