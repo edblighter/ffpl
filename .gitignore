@@ -25,7 +25,9 @@
 *.log
 *.sql
 *.sqlite
- 
+*.con
+*.key
+
 # OS generated files #
 ######################
 .DS_Store
@@ -45,3 +47,5 @@ nbproject
 .project
 .settings
 composer.lock
+Test
+index.php
