@@ -110,7 +110,12 @@ class Conexao extends PDO {
 	 * @param pede arquivo key criptografado.
 	 * @return boolean
 	 */
-	public function __construct($connection_file, $key) {
+	public function __construct($connection_file, $key, Array $options= array()) {
+		if(empty($options)):
+			$util = new Utils;
+		else:
+			$util = new Utils($options['algo'],$options['mode']);
+		endif;
 		if (is_file($connection_file))
 			if (($k = file_get_contents($connection_file)) === false)
 				$this -> e['get_file_connect'] = "404";
@@ -133,9 +138,9 @@ class Conexao extends PDO {
 		if ($this -> has_error())
 			return false;
 
-		self::$u64key = base64_decode($p);
-		self::$u64data = base64_decode($k);
-		self::$databaseData = explode(",", Utils::decrypt(self::$u64data, self::$u64key));
+		self::$u64key = $p;
+		self::$u64data = $k;
+		self::$databaseData = explode(",", $util->decrypt(self::$u64data, self::$u64key));
 	}
 
 	/**
@@ -183,13 +188,13 @@ class Conexao extends PDO {
 	public function ex($sql, $mode) {
 		switch($mode) {
 			case 'exec' :
-				return $this -> conexao -> exec($sql);
+				return self::$conexao -> exec($sql);
 				break;
 			case 'query' :
-				return $this -> conexao -> query($sql);
+				return self::$conexao -> query($sql);
 				break;
 			case 'prepare' :
-				return $this -> conexao -> prepare($sql);
+				return self::$conexao -> prepare($sql);
 				break;
 		}
 
@@ -215,7 +220,7 @@ class Conexao extends PDO {
 			$k = $this -> ex("SELECT * FROM $table", 'query');
 			if ($k !== false || is_object($k)) {
 				$k -> execute();
-				return $k -> fetchAll();
+				return $k -> fetchAll(PDO::FETCH_OBJ);
 			} else {
 				$this -> e = $this -> connect() -> errorCode();
 				$this -> has_error();
