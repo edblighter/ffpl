@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Mecanismo de Template para PHP5
  *

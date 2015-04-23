@@ -1,22 +1,25 @@
 ﻿<?php
-/*
+/**
  Class Conexao usando PDO.
- Start:27/05/2013
-
- v0.1(27/05/2013)
+ @author FFPL (fued.felipe@hotmail.com)
+ @version 0.5
+ v0.1
  - Criado padrao de criptografia para os dados do banco.
  - Criado o metodo connect,show_error,show_all_error,ex($sql,$mode),getAll($table),volta.
- v0.2(28/05/2013)
+ v0.2
  - Adicionado metodo ver, credits,getSpecific($array,$table).
- v0.3(08/07/2013)
+ v0.3
  - Adicionado delete_item($colum_name,$key,$table),delete_itens($colum_data,$table)
-
- v0.4(12/09/2013)
+ v0.4
  -Adicionado documentacao das funcoes
  -Corrigido bug da funcao delete_item.
+ v0.5
+ - now crypto funtions needs class Utils and class Crypt to decode the conector and the key
+ - all systems are now POO
+ 
  TODO
  -Paginator
- -LIMIT nos SELECT
+ -Modificar a funcuncao mountTerms to use PDO
  -Adicionar mais codigos de erro em has_error
 
  */
@@ -30,73 +33,55 @@ class Conexao extends PDO {
 	/** @var string Base64 da string criptografada de acesso ao banco */
 	private static $u64data;
 	/** @var string String descriptografada de acesso ao banco */
-	private static $databaseData;
+	private static $databaseData = null;
+	/** @var array general options */
+	private static $options;
 	/** @var string Mensagem de erro*/
-	private $e;
+	private static $e;
 	/** @var array Contem todas as mensagens de erro*/
-	private $msg = array();
+	private static $msg = array();
 	/** @var PDO Instancia de conexao */
 	private static $conexao;
-	/** @var float Versao da classe */
-	private $versao;
-	/** @var string Contem os creditos da classe */
-	private $credits;
-
-	/** Setter do valor da versao da classe
-	 * @return float
-	 */
-	public function ver() {
-		$this -> versao = '0.4';
-		return $this -> versao;
-	}
-
-	/** Imprime os creditos da Classe contendo a versao da classe.
-	 * @return string
-	 */
-	public function credits() {
-		$this -> credits = sprintf("\nConexao class ver %s\nCreated by FFPL.\n", $this -> ver());
-		return $this -> credits;
-	}
 
 	/**
-	 *
-	 *
+	 * This function handle errors and set persanalized error messages
+	 * @return boolean true if has any error / false if not
 	 * */
-	private function has_error() {
-		if (sizeof($this -> e) > 0) {
-			foreach ($this->e as $val => $key) {
+	private static function has_error() {
+		if (sizeof(self::$e) > 0) {
+			foreach (self::$e as $val => $key) {
 				switch($val) {
 					case 'get_file_connect' :
 						if ($key == '404') {
 							$string_erro = "Não foi possivel obter o arquivo de conexão";
-							array_push($this -> msg, $string_erro);
+							array_push(self::$msg, $string_erro);
 						}
 						if ($key == 'OK')
 							;
 						if ($key == '403') {
 							$string_erro = "Caminho para o arquivo de conexão nao encontrado";
-							array_push($this -> msg, $string_erro);
+							array_push(self::$msg, $string_erro);
 						}
 						break;
 					case 'get_file_key' :
 						if ($key == '404') {
 							$string_erro = "Não foi possivel obter o arquivo de chave";
-							array_push($this -> msg, $string_erro);
+							array_push(self::$msg, $string_erro);
 						}
 						if ($key == 'OK')
 							;
 						if ($key == '403') {
 							$string_erro = "Caminho para o arquivo de chave nao encontrado";
-							array_push($this -> msg, $string_erro);
+							array_push(self::$msg, $string_erro);
 						}
 						break;
 					case '42S22' :
 						$string_erro = "Coluna nao encontrada:" . $this -> e['42S22'];
-						array_push($this -> msg, $string_erro);
+						array_push(self::$msg, $string_erro);
 						break;
 				}
 			}
-			if (sizeof($this -> msg) > 0)
+			if (sizeof(self::$msg) > 0)
 				return true;
 			else
 				return false;
@@ -105,42 +90,73 @@ class Conexao extends PDO {
 	}
 
 	/**
-	 * Função abre dois aquivos de conexão para o banco de dados.
-	 * @param pede arquivo de conexão do banco de dados criptografado .
-	 * @param pede arquivo key criptografado.
-	 * @return boolean
-	 */
-	public function __construct($connection_file, $key, Array $options= array()) {
-		if(empty($options)):
-			$util = new Utils;
-		else:
-			$util = new Utils($options['algo'],$options['mode']);
-		endif;
+	 * Get the content of connection file
+	 * @return string or boolean
+	 * */
+	private static function getFileCon($connection_file) {
 		if (is_file($connection_file))
 			if (($k = file_get_contents($connection_file)) === false)
-				$this -> e['get_file_connect'] = "404";
+				self::setErro('get_file_connect', "404");
 			else
-				$this -> e['get_file_connect'] = "OK";
+				self::setErro('get_file_connect', "OK");
 		else
-			$this -> e['get_file_connect'] = "403";
+			self::setErro('get_file_connect', "403");
 
-		if ($this -> has_error())
+		if (self::has_error())
 			return false;
+		else
+			return $k;
+	}
 
+	/**
+	 * Get the content of key file
+	 * @return string or boolean
+	 * */
+	private static function getFileKey($key) {
 		if (is_file($key))
 			if (($p = file_get_contents($key)) === false)
-				$this -> e['get_file_key'] = "404";
+				self::setErro('get_file_key', "404");
 			else
-				$this -> e['get_file_key'] = "OK";
+				self::setErro('get_file_key', "OK");
 		else
-			$this -> e['get_file_key'] = "403";
+			self::setErro('get_file_key', "403");
 
-		if ($this -> has_error())
+		if (self::has_error())
 			return false;
+		else
+			return $p;
+	}
 
-		self::$u64key = $p;
-		self::$u64data = $k;
-		self::$databaseData = explode(",", $util->decrypt(self::$u64data, self::$u64key));
+	private static function setErro($key, $value) {
+		self::$e[$key] = $value;
+	}
+
+	/**
+	 * Função abre dois aquivos de conexão para o banco de dados.
+	 * @var string caminho do arquivo criptografado de conexão do banco de dados.
+	 * @var string caminho do arquivo de chave criptografica.
+	 * @return boolean false if error occur
+	 */
+	public function __construct($connection_file, $key, Array $options = array()) {
+		if (empty($options['algo']) && empty($options['mode'])) :
+			$util = new Utils;
+		else :
+			self::$options['algorithm'] = $options['algo'];
+			self::$options['mode'] = $options['mode'];
+			$util = new Utils(self::$options['algorithm'], self::$options['mode']);
+		endif;
+		if (empty($options['fetch_mode'])) :
+			self::$options['fetch_mode'] = PDO::FETCH_ASSOC;
+		else :
+			self::$options['fetch_mode'] = $options['fetch_mode'];
+		endif;
+		if ((self::$u64key = self::getFileKey($key)) === false) :
+			return false;
+		endif;
+		if ((self::$u64data = self::getFileCon($connection_file)) === false) :
+			return false;
+		endif;
+		self::$databaseData = explode(",", $util -> decrypt(self::$u64data, $util -> decodeKey(self::$u64key)));
 	}
 
 	/**
@@ -149,30 +165,29 @@ class Conexao extends PDO {
 	 * @access public
 	 */
 	public function show_all_error() {
-		return $this -> msg;
-
+		return self::$msg;
 	}
 
 	/**
 	 * Função retorna os erros, caso não haja erros retorna NULL.
 	 * @return string
-	 * @access public
-	 */
+	 **/
 	public function show_error() {
-		return array_pop($this -> msg);
+		return array_pop(self::$msg);
 	}
 
 	/**
 	 * Conecta o banco da dados.
-	 * @return string
-	 * @access public
-	 */
+	 * @return PDO
+	 **/
 	public function connect() {
 		try {
-			self::$conexao = new PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(PDO::ATTR_PERSISTENT => true));
-			self::$conexao -> setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			if (self::$conexao == null) :
+				self::$conexao = new PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(PDO::ATTR_PERSISTENT => TRUE));
+				self::$conexao -> setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			endif;
 		} catch(PDOException $error) {
-			array_push($this -> msg, $error -> getMessage());
+			array_push(self::$msg, $error -> getMessage());
 			return false;
 		}
 		return self::$conexao;
@@ -180,13 +195,12 @@ class Conexao extends PDO {
 
 	/**
 	 * Executa o comando SQL pedido no determinado caso da função.
-	 * @param requer um SQL para execução.
-	 * @param pede o modo para executar. Exemplo 'exec', 'query', 'prepare'.
-	 * @return array
-	 * @access public
-	 */
+	 * @var string requer um SQL para execução.
+	 * @var string pede o modo para executar. Exemplo 'exec', 'query', 'prepare'.
+	 * @return PDOStatment
+	 **/
 	public function ex($sql, $mode) {
-		switch($mode) {
+		switch($mode) :
 			case 'exec' :
 				return self::$conexao -> exec($sql);
 				break;
@@ -196,7 +210,7 @@ class Conexao extends PDO {
 			case 'prepare' :
 				return self::$conexao -> prepare($sql);
 				break;
-		}
+		endswitch;
 
 	}
 
@@ -204,44 +218,49 @@ class Conexao extends PDO {
 	 * Executa um rollBack no banco da dados.
 	 * @return string
 	 * @access public
-	 */
+	 **/
 	public function volta() {
-		$this -> conexao -> rollBack();
+		self::$conexao -> rollBack();
 	}
 
 	/**
-	 * Imprime toda a tabela.
-	 * @param O nome da tabela do banco da dados a ser imprimida.
-	 * @return array
-	 * @access public
-	 */
-	public function getAll($table) {
+	 * Select all fields of the table.
+	 * @var string The name of table to get data
+	 * @var array The terms to limit the select: array("WHERE" => array(":a :condition :b", ":operator", ":c :condition :d"), "ORDER BY" => array(":column => :mode"), "LIMIT" => ":limit", "OFFSET" => ":offset");
+	 * @return array Returns the data of the select - The form of return may be set on the constructor of the class ex: PDO::FETCH_OBJ or PDO::FETCH_ASSOC
+	 **/
+
+	public function getAll($table, $terms = null) {
 		try {
-			$k = $this -> ex("SELECT * FROM $table", 'query');
+			if (!is_null($terms)) :
+				$Terms = $this -> mountTerms($terms);
+				$query = "SELECT * FROM {$table}{$Terms}";
+			else :
+				$query = sprintf("SELECT * FROM %s", $table);
+			endif;
+			$k = $this -> ex($query, 'query');
 			if ($k !== false || is_object($k)) {
 				$k -> execute();
-				return $k -> fetchAll(PDO::FETCH_OBJ);
+				return $k -> fetchAll(self::$options['fetch_mode']);
 			} else {
-				$this -> e = $this -> connect() -> errorCode();
-				$this -> has_error();
+				self::$e = $this -> connect() -> errorCode();
+				self::has_error();
 				return false;
 			}
 		} catch(PDOException $error) {
-			$this -> e[$error -> getCode()] = $error -> getMessage();
-			$this -> has_error();
+			self::$e[$error -> getCode()] = $error -> getMessage();
+			self::has_error();
 			return false;
-
 		}
 	}
 
 	/**
 	 * Imprime os campos da tabela passados pelo array.
-	 * @param Pede uma array com o nome dos campos da tabela.
-	 * @param Pede o nome da Tabela a ser consultada.
+	 * @var array Pede uma array com o nome dos campos da tabela.
+	 * @var string Pede o nome da Tabela a ser consultada.
 	 * @return array
-	 * @access public
-	 */
-	public function getSpecific($array, $table) {
+	 **/
+	public function getSpecific($array, $table, $terms = null) {
 		$p = sizeof($array);
 		$campos = '';
 		for ($i = 0; $i < $p; $i++)
@@ -250,10 +269,15 @@ class Conexao extends PDO {
 			else
 				$campos .= $array[$i];
 		try {
-			$k = $this -> ex("SELECT $campos FROM $table", 'prepare');
+			if ($terms == null) :
+				$k = $this -> ex("SELECT $campos FROM $table", 'prepare');
+			else :
+				$Terms = $this -> mountTerms($terms);
+				$k = $this -> ex("SELECT {$campos} FROM {$table}{$Terms}", 'prepare');
+			endif;
 			if ($k !== false || is_object($k)) {
 				$k -> execute();
-				return $k -> fetchAll();
+				return $k -> fetchAll(self::$options['fetch_mode']);
 			} else {
 				$this -> e = $this -> connect() -> errorCode();
 				$this -> has_error();
@@ -269,32 +293,38 @@ class Conexao extends PDO {
 
 	/**
 	 * Insere dados na tabela.
-	 * @param Pede o nome dos campos seguido das variaveis a serem inseridas nos mesmos.
-	 * @param Pede o nome da tabela.
+	 * @var array Pede o nome dos campos seguido das variaveis a serem inseridas nos mesmos.
+	 * @var string Pede o nome da tabela.
 	 * @return array
-	 * @access public
+	 * This functions needs to be upgraded
+	 * FIXME 
+	 * -Improve PDO 
 	 */
-	public function insert($array, $table) {
+/*	private function insert($array, $table) {
 		$p = sizeof($array);
 		$campos = '';
-		$values = '';
+		$values = array();
+		$bind = '';
 		$i = 0;
 		foreach ($array as $key => $val) {
 			if ($i < $p - 1) {
 				$campos .= $key . ",";
-				$values .= "'" . $val . "',";
+				array_push($values, $val);
+				$bind .= '? ,';
 			} else {
 				$campos .= $key;
-				$values .= "'" . $val . "'";
+				array_push($values, $val);
+				$bind .= '?';
 			}
 			$i++;
 		}
-		$this -> conexao -> beginTransaction();
+		self::$conexao -> beginTransaction();
 		try {
 
-			$k = $this -> ex("INSERT INTO $table($campos) VALUES($values)", 'prepare');
-			$k -> execute();
-			$this -> conexao -> commit();
+			$k = $this -> ex("INSERT INTO {$table}({$campos}) VALUES({$bind})", 'prepare');
+
+			$k -> execute($values);
+			self::$conexao -> commit();
 			return true;
 		} catch(PDOException $error) {
 			$this -> volta();
@@ -304,28 +334,26 @@ class Conexao extends PDO {
 		}
 
 	}
-
+*/
 	/**
 	 * Retorna o ultimo ID.
-	 * @return ID
-	 * @access public
+	 * @return int
 	 */
 	public function getLastID() {
-		return $this -> conexao -> lastInsertId();
+		return self::$conexao -> lastInsertId();
 	}
 
 	/**
-	 * Deleta a linha cujo a key é passa como parametro.
-	 * @param nome da coluno onde a key está.
-	 * @param nome da key que será excluida.
-	 * @param nome da tabela.
-	 * @return booleano
-	 * @access public
-	 */
-	public function delete_item($colum_name, $key, $table) {
-		$this -> conexao -> beginTransaction();
+	 * Delets ONE ROW based on parameters passed on $terms 
+	 * @var string nome da tabela.
+	 * @var 
+	 * @return boolean true if delete is ok.
+	 **/
+	public function delete_item($table,$terms) {
+		self::$conexao -> beginTransaction();
 		try {
-			$k = $this -> ex("DELETE FROM $table WHERE $colum_name='$key' LIMIT 1", 'prepare');
+			$Terms = $this->mountTerms($terms);
+			$k = $this -> ex("DELETE FROM {$table} {$Terms}", 'prepare');
 			$k -> execute();
 			$this -> conexao -> commit();
 			return true;
@@ -339,28 +367,73 @@ class Conexao extends PDO {
 	}
 
 	/**
-	 * Deleta itens da linha da tabela cujo parametro passado se encontra
-	 * @param nome do item a ser localizado na linha.
-	 * @param nome da tabela.
-	 * @return booleano
-	 * @access public
-	 */
-	public function delete_itens($colum_data, $table) {
-		$this -> conexao -> beginTransaction();
-		try {
-			foreach ($colum_data as $val => $value) {
-				$k = $this -> ex("DELETE FROM $table WHERE $val='$value' LIMIT 1", 'prepare');
-				$k -> execute();
-			}
-			$this -> conexao -> commit();
-			return true;
-		} catch(PDOException $error) {
-			$this -> volta();
-			$this -> e[$error -> getCode()] = $error -> getMessage();
-			$this -> has_error();
-			return false;
-		}
+	 * This function mounts the terms to be utilized in functions like getAll, getSpecific, deleteItem
+	 * @var array The variable $terms may be based in this : $terms_structure = array("WHERE" => array(":a :condition :b", ":operator", ":c :condition :d"), "ORDER BY" => array(":column :mode"), "LIMIT" => ":limit", "OFFSET" => ":offset");
+	 * @return string the formated string containing the elements the $terms
+	 * */
+	private function mountTerms($terms) {
 
+		$operator = array("AND", "OR", "NOT", "IS NULL", "UNIQUE");
+		$conditions = array(">", "<", "=", "+", "-", "*", "/", "%", "!=", "<>", ">=", "<=", "!<", "!>", "BETWEEN", "EXISTS", "IN", "LIKE");
+		$modes = array("ASC", "DESC");
+		$string = '';
+		if (array_key_exists("WHERE", $terms)) :
+			$string = sprintf(" WHERE ");
+			$where = $terms["WHERE"];
+			$count = sizeof($where);
+
+			if ($count > 1) :
+				for ($i = 0; $i < $count; $i++) :
+					if (in_array($where[$i], $operator)) :
+						$string .= sprintf(" %s ", $where[$i]);
+					else :
+						$parts = explode(" ", $where[$i]);
+						if (in_array($parts[1], $conditions)) :
+							if (is_numeric($parts[2])) :
+								$string .= sprintf("`%s` %s %d", $parts[0], $parts[1], $parts[2]);
+							else :
+								$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], $parts[2]);
+							endif;
+						endif;
+					endif;
+				endfor;
+			else :
+				$parts = explode(" ", $where[0]);
+				$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], $parts[2]);
+				Utils::debugMulti($string);
+			endif;
+		endif;
+		if (array_key_exists("ORDER BY", $terms)) :
+			$order = sprintf("ORDER BY");
+			$parts = $terms["ORDER BY"];
+			$count = sizeof($parts);
+			$i = 0;
+
+			if ($count > 1) :
+				$string .= sprintf(" %s ", $order);
+				foreach ($parts as $var => $value) :
+					$i++;
+					if ($i == $count) :
+						$string .= sprintf("`%s` %s", $var, $value);
+						break;
+					else :
+						$string .= sprintf("`%s` %s, ", $var, $value);
+					endif;
+				endforeach;
+			else :
+				if (in_array(array_values($parts)[0], $modes)) :
+					$string .= sprintf(" %s `%s` %s ", $order, array_keys($parts)[0], array_values($parts)[0]);
+				endif;
+			endif;
+		endif;
+		if (array_key_exists("LIMIT", $terms)) :
+			$string .= sprintf(" LIMIT %d", $terms["LIMIT"]);
+		endif;
+		if (array_key_exists("OFFSET", $terms)) :
+			$string .= sprintf(" OFFSET %d", $terms["LIMIT"]);
+		endif;
+
+		return $string;
 	}
 
 }
