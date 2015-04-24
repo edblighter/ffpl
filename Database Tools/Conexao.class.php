@@ -2,7 +2,7 @@
 /**
  Class Conexao usando PDO.
  @author FFPL (fued.felipe@hotmail.com)
- @version 0.5
+ @version 0.5a
  v0.1
  - Criado padrao de criptografia para os dados do banco.
  - Criado o metodo connect,show_error,show_all_error,ex($sql,$mode),getAll($table),volta.
@@ -13,7 +13,7 @@
  v0.4
  -Adicionado documentacao das funcoes
  -Corrigido bug da funcao delete_item.
- v0.5
+ v0.5a
  - now crypto funtions needs class Utils and class Crypt to decode the conector and the key
  - all systems are now POO
  

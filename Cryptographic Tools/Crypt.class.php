@@ -1,5 +1,7 @@
 <?php
 /**
+ * @author FFPL (fued.felipe@hotmail.com)
+ * @version 1.0a
  * Abstract class to use in cryptographic functions
  * you have to implement the $key encode and decode functions
  * the __constructor needs two optional parameters to initialize
