@@ -35,7 +35,12 @@ class Utils extends Crypt {
 		endforeach;
 		echo "</pre>";
 	}
-
+	public static function generateSalt(){
+		return hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
+	}
+	public static function hashPassword($password,$random_salt){
+		return hash('sha512', $password . $random_salt);
+	}
 	/**
 	 * @var string plain text of key
 	 * @return string base64 of the key coded
