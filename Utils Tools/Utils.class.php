@@ -1,7 +1,7 @@
 <?php
 /**
  * @author FFPL (fued.felipe@hotmail.com)
- * @version 1.0a
+ * @version 1.1a
  * Util Functions to use in general projects.
  * The contructor may be initalized with parameters to criptographic functions
  * @var string optinal Algorithm to use in crypto function - You may use the function Utils::listAlgorithms() to get a list of availble algorithms - default is MCRYPT_3DES.

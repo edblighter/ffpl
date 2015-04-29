@@ -55,7 +55,7 @@
 if (!isset($_POST["driver"])) :
 	if (isset($_POST["hash"])) :
 		$hash = $_POST["hash"];
-		$password=$_POST["password"];
+		$password=hash('sha512',$_POST["password"]);
 		$salt = Utils::generateSalt();
 		echo "Salt:<input size=200 type=\"text\" value=\"" . $salt . "\">";
 		echo "Encoded Password:<input size=200 type=\"text\" value=\"" . Utils::hashPassword($password, $salt) . "\">";
