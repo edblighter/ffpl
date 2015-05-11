@@ -1,0 +1,17 @@
+{
+    "name": "ffpl/utils",
+    "description": "Test",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Felipe Prestes",
+            "email": "the.copier.kakashi@gmail.com"
+        }
+    ],
+    "minimum-stability": "alpha",
+    "require": {},
+    "autoload": {
+        "psr-0": {"": "src/"}
+    }
+}

@@ -50,3 +50,4 @@ composer.lock
 Test
 index.php
 Old
+composer.phar
