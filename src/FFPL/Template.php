@@ -178,7 +178,7 @@ namespace FFPL {
 		 */
 		private function loadfile($varname, $filename) {
 			if (!file_exists($filename))
-				throw new InvalidArgumentException("file $filename does not exist");
+				throw new \InvalidArgumentException("file $filename does not exist");
 			// If it's PHP file, parse it
 			if ($this -> isPHP($filename)) {
 				ob_start();
@@ -190,7 +190,7 @@ namespace FFPL {
 				// Reading file and hiding comments
 				$str = preg_replace("/<!---.*?--->/smi", "", file_get_contents($filename));
 				if (empty($str))
-					throw new InvalidArgumentException("file $filename is empty");
+					throw new \InvalidArgumentException("file $filename is empty");
 				$this -> setValue($varname, $str);
 				$blocks = $this -> identify($str, $varname);
 				$this -> createBlocks($blocks);
