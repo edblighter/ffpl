@@ -12,6 +12,6 @@
     "minimum-stability": "alpha",
     "require": {},
     "autoload": {
-        "psr-0": {"": "src/"}
+        "psr-0": {"FFPL\\": "src/"}
     }
 }
