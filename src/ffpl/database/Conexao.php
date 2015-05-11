@@ -1,6 +1,5 @@
 ﻿<?php
-namespace ffpl\database {
-	use ffpl\utils;
+namespace FFPL {
 	/**
 	 * Class Conexao usando PDO.
 	 *

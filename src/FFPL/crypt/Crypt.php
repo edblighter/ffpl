@@ -1,14 +1,14 @@
 <?php
-namespace ffpl\crypt {
+namespace FFPL {
 	/**
 	 * Abstract class to use in cryptographic functions
 	 * you have to implement the $key encode and decode functions
 	 * the __constructor needs two optional parameters to initialize
-	 * 
+	 *
 	 * @author FFPL (fued.felipe@hotmail.com)
-	 * 
+	 *
 	 * @version 0.1a
-	 * 
+	 *
 	 * @var string algoritm - default is MCRYPT_3DES
 	 * @var string mode - default is ecb
 	 * */

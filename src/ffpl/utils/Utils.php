@@ -1,5 +1,5 @@
 <?php
-namespace ffpl\utils {
+namespace FFPL {
 	/**
 	 * Util Functions to use in general projects.
 	 *
