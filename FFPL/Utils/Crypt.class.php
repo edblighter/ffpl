@@ -82,6 +82,9 @@ abstract class Crypt {
 	 * @var string Text to be crypted
 	 * @var string key to criptograpth the text
 	 * @return string base64
+	 * FIXME
+	 * - cbc and cfb need fix to encode e decode. see php.net/manual/en/function.mcrypt-encrypt.php
+	 * - only ecb mode works properly
 	 * */
 	final public static function encrypt($str, $key) {
 		$block = mcrypt_get_block_size(self::$algo, self::$mode);

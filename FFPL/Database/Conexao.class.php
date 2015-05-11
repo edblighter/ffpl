@@ -1,32 +1,17 @@
 ﻿<?php
 /**
- Class Conexao usando PDO.
- @author FFPL (fued.felipe@hotmail.com)
- @version 0.5a
- v0.1
- - Criado padrao de criptografia para os dados do banco.
- - Criado o metodo connect,show_error,show_all_error,ex($sql,$mode),getAll($table),volta.
- v0.2
- - Adicionado metodo ver, credits,getSpecific($array,$table).
- v0.3
- - Adicionado delete_item($colum_name,$key,$table),delete_itens($colum_data,$table)
- v0.4
- -Adicionado documentacao das funcoes
- -Corrigido bug da funcao delete_item.
- v0.5a
- - now crypto funtions needs class Utils and class Crypt to decode the conector and the key
- - all systems are now POO
- 
- TODO
- -Paginator
- -Modificar a funcuncao mountTerms to use PDO
- -Adicionar mais codigos de erro em has_error
-
- */
+ * Class Conexao usando PDO.
+ *
+ * This class uses the main base of PDO and implements a cryptographic functions
+ * to hide the PDO DSN
+ * 
+ * @author FFPL (fued.felipe@hotmail.com)
+ * @version 0.1a
+ **/
 
 class Conexao extends PDO {
 
-	/** @var string Base64 da chave de criptografia de acesso ao banco */
+	/** @var string Base64 of the cryptographic key to access the database */
 	private static $u64key;
 	/** @var string Base64 da string de chave de criptogafia */
 	private static $cryptKey;
@@ -226,8 +211,11 @@ class Conexao extends PDO {
 	/**
 	 * Select all fields of the table.
 	 * @var string The name of table to get data
-	 * @var array The terms to limit the select: array("WHERE" => array(":a :condition :b", ":operator", ":c :condition :d"), "ORDER BY" => array(":column => :mode"), "LIMIT" => ":limit", "OFFSET" => ":offset");
-	 * @return array Returns the data of the select - The form of return may be set on the constructor of the class ex: PDO::FETCH_OBJ or PDO::FETCH_ASSOC
+	 * @var array The terms to limit the select: array("WHERE" => array(":a
+	 * :condition :b", ":operator", ":c :condition :d"), "ORDER BY" => array(":column
+	 * => :mode"), "LIMIT" => ":limit", "OFFSET" => ":offset");
+	 * @return array Returns the data of the select - The form of return may be set
+	 * on the constructor of the class ex: PDO::FETCH_OBJ or PDO::FETCH_ASSOC
 	 **/
 
 	public function getAll($table, $terms = null) {
@@ -293,48 +281,49 @@ class Conexao extends PDO {
 
 	/**
 	 * Insere dados na tabela.
-	 * @var array Pede o nome dos campos seguido das variaveis a serem inseridas nos mesmos.
+	 * @var array Pede o nome dos campos seguido das variaveis a serem inseridas nos
+	 * mesmos.
 	 * @var string Pede o nome da tabela.
 	 * @return array
 	 * This functions needs to be upgraded
-	 * FIXME 
-	 * -Improve PDO 
+	 * FIXME
+	 * -Improve PDO
 	 */
-/*	private function insert($array, $table) {
-		$p = sizeof($array);
-		$campos = '';
-		$values = array();
-		$bind = '';
-		$i = 0;
-		foreach ($array as $key => $val) {
-			if ($i < $p - 1) {
-				$campos .= $key . ",";
-				array_push($values, $val);
-				$bind .= '? ,';
-			} else {
-				$campos .= $key;
-				array_push($values, $val);
-				$bind .= '?';
-			}
-			$i++;
-		}
-		self::$conexao -> beginTransaction();
-		try {
+	/*	private function insert($array, $table) {
+	 $p = sizeof($array);
+	 $campos = '';
+	 $values = array();
+	 $bind = '';
+	 $i = 0;
+	 foreach ($array as $key => $val) {
+	 if ($i < $p - 1) {
+	 $campos .= $key . ",";
+	 array_push($values, $val);
+	 $bind .= '? ,';
+	 } else {
+	 $campos .= $key;
+	 array_push($values, $val);
+	 $bind .= '?';
+	 }
+	 $i++;
+	 }
+	 self::$conexao -> beginTransaction();
+	 try {
 
-			$k = $this -> ex("INSERT INTO {$table}({$campos}) VALUES({$bind})", 'prepare');
+	 $k = $this -> ex("INSERT INTO {$table}({$campos}) VALUES({$bind})", 'prepare');
 
-			$k -> execute($values);
-			self::$conexao -> commit();
-			return true;
-		} catch(PDOException $error) {
-			$this -> volta();
-			$this -> e[$error -> getCode()] = $error -> getMessage();
-			$this -> has_error();
-			return false;
-		}
+	 $k -> execute($values);
+	 self::$conexao -> commit();
+	 return true;
+	 } catch(PDOException $error) {
+	 $this -> volta();
+	 $this -> e[$error -> getCode()] = $error -> getMessage();
+	 $this -> has_error();
+	 return false;
+	 }
 
-	}
-*/
+	 }
+	 */
 	/**
 	 * Retorna o ultimo ID.
 	 * @return int
@@ -344,15 +333,15 @@ class Conexao extends PDO {
 	}
 
 	/**
-	 * Delets ONE ROW based on parameters passed on $terms 
+	 * Delets ONE ROW based on parameters passed on $terms
 	 * @var string nome da tabela.
-	 * @var 
+	 * @var
 	 * @return boolean true if delete is ok.
 	 **/
-	public function delete_item($table,$terms) {
+	public function delete_item($table, $terms) {
 		self::$conexao -> beginTransaction();
 		try {
-			$Terms = $this->mountTerms($terms);
+			$Terms = $this -> mountTerms($terms);
 			$k = $this -> ex("DELETE FROM {$table} {$Terms}", 'prepare');
 			$k -> execute();
 			$this -> conexao -> commit();
@@ -367,8 +356,12 @@ class Conexao extends PDO {
 	}
 
 	/**
-	 * This function mounts the terms to be utilized in functions like getAll, getSpecific, deleteItem
-	 * @var array The variable $terms may be based in this : $terms_structure = array("WHERE" => array(":a :condition :b", ":operator", ":c :condition :d"), "ORDER BY" => array(":column :mode"), "LIMIT" => ":limit", "OFFSET" => ":offset");
+	 * This function mounts the terms to be utilized in functions like getAll,
+	 * getSpecific, deleteItem
+	 * @var array The variable $terms may be based in this : $terms_structure =
+	 * array("WHERE" => array(":a :condition :b", ":operator", ":c :condition :d"),
+	 * "ORDER BY" => array(":column :mode"), "LIMIT" => ":limit", "OFFSET" =>
+	 * ":offset");
 	 * @return string the formated string containing the elements the $terms
 	 * */
 	private function mountTerms($terms) {
@@ -430,7 +423,7 @@ class Conexao extends PDO {
 			$string .= sprintf(" LIMIT %d", $terms["LIMIT"]);
 		endif;
 		if (array_key_exists("OFFSET", $terms)) :
-			$string .= sprintf(" OFFSET %d", $terms["LIMIT"]);
+			$string .= sprintf(" OFFSET %d", $terms["OFFSET"]);
 		endif;
 
 		return $string;
