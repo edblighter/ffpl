@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 namespace FFPL {
 	/**
 	 * Class Conexao usando PDO.
@@ -133,7 +133,7 @@ namespace FFPL {
 				$util = new Utils(self::$options['algorithm'], self::$options['mode']);
 			endif;
 			if (empty($options['fetch_mode'])) :
-				self::$options['fetch_mode'] = PDO::FETCH_ASSOC;
+				self::$options['fetch_mode'] = \PDO::FETCH_ASSOC;
 			else :
 				self::$options['fetch_mode'] = $options['fetch_mode'];
 			endif;
@@ -170,10 +170,10 @@ namespace FFPL {
 		public function connect() {
 			try {
 				if (self::$conexao == null) :
-					self::$conexao = new PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(PDO::ATTR_PERSISTENT => TRUE));
-					self::$conexao -> setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+					self::$conexao = new \PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(\PDO::ATTR_PERSISTENT => TRUE));
+					self::$conexao -> setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 				endif;
-			} catch(PDOException $error) {
+			} catch(\PDOException $error) {
 				array_push(self::$msg, $error -> getMessage());
 				return false;
 			}
@@ -273,7 +273,7 @@ namespace FFPL {
 					$this -> has_error();
 					return false;
 				}
-			} catch(PDOException $error) {
+			} catch(\PDOException $error) {
 				$this -> e[$error -> getCode()] = $error -> getMessage();
 				$this -> has_error();
 				return false;
@@ -348,7 +348,7 @@ namespace FFPL {
 				$k -> execute();
 				$this -> conexao -> commit();
 				return true;
-			} catch(PDOException $error) {
+			} catch(\PDOException $error) {
 				$this -> volta();
 				$this -> e[$error -> getCode()] = $error -> getMessage();
 				$this -> has_error();

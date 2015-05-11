@@ -14,11 +14,12 @@ namespace FFPL {
 	 * @var string optional Mode to use in crypto function - You may use the function
 	 * Utils::listModes() to get a list of availble modes - default mode is ECB.
 	 * */
-	class Utils extends ffpl\crypt {
+	use FFPL\Crypt;
+	class Utils extends Crypt {
 		/**
 		 * Starts the contructor. If you will use the crypto function you have to set the
 		 * parameters which you will need.
-		 * 
+		 *
 		 * @var string Algorithm to use in crypto function - You may use the function
 		 * Utils::listAlgorithms() to get a list of availble algorithms - default is
 		 * MCRYPT_3DES.
