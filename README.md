@@ -11,3 +11,4 @@ FFPL Utils classes
 * Util Functions - v0.1a
 * Conexao functions - v0.1a
 * Templates Class - v2.2 - by: Rael G.C. included in the package
+* AltoRouter Class - v1.1.0 - by: Danny V.K. included in the package(renamed to Router)

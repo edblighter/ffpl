@@ -1,17 +1,22 @@
 {
-    "name": "ffpl/utils",
-    "description": "Test",
-    "type": "library",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Felipe Prestes",
-            "email": "the.copier.kakashi@gmail.com"
-        }
-    ],
-    "minimum-stability": "alpha",
-    "require": {},
-    "autoload": {
-        "psr-4": {"FFPL\\": "src/FFPL/"}
-    }
+	"name": "ffpl/utils",
+	"description": "Test",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Felipe Prestes",
+			"email": "the.copier.kakashi@gmail.com",
+			"homepage": "https://github.com/edblighter"
+		}
+	],
+	"minimum-stability": "alpha",
+	"require": {
+		"php": ">=5.3"
+	},
+	"autoload": {
+		"psr-4": {
+			"FFPL\\": "src/FFPL/"
+		}
+	}
 }

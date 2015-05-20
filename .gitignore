@@ -47,7 +47,6 @@ nbproject
 .project
 .settings
 composer.lock
-Test
-index.php
-Old
 composer.phar
+test
+index.php
