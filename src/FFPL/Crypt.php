@@ -109,18 +109,39 @@ namespace FFPL {
 			$block = mcrypt_get_block_size(self::$algo, self::$mode);
 			$pad = $block - (strlen($str) % $block);
 			$str .= str_repeat(chr($pad), $pad);
+			$key_size = strlen($key);
+			$cipher_key_size = mcrypt_get_key_size(self::$algo, self::$mode);
+			if ($key_size < $cipher_key_size) :
+				switch($cipher_key_size) :
+					case '24' :
+						$key = mhash(MHASH_TIGER, $key);
+						break;
+					case '32' :
+						$key = mhash(MHASH_SHA256, $key);
+						break;
+					case '56' :
+						$key = mhash(MHASH_RIPEMD320, $key).mhash(MHASH_RIPEMD128, $key) ;
+						break;
+				endswitch;
+			endif;
 			switch(self::$mode) :
 				case 'ecb' :
-					$str = mcrypt_encrypt(self::$algo, $key, $str, MCRYPT_MODE_ECB);
+					$out = mcrypt_encrypt(self::$algo, $key, $str, MCRYPT_MODE_ECB);
 					break;
 				case 'cbc' :
-					$str = mcrypt_encrypt(self::$algo, $key, $str, MCRYPT_MODE_CBC);
+					$iv_size = mcrypt_get_iv_size(self::$algo, MCRYPT_MODE_CBC);
+					$iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM);
+					$str = mcrypt_encrypt(self::$algo, $key, $str, MCRYPT_MODE_CBC, $iv);
+					$out = $iv . $str;
 					break;
 				case 'cfb' :
-					$str = mcrypt_encrypt(self::$algo, $key, $str, MCRYPT_MODE_CFB);
+					$iv_size = mcrypt_get_iv_size(self::$algo, MCRYPT_MODE_CFB);
+					$iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM);
+					$str = mcrypt_encrypt(self::$algo, $key, $str, MCRYPT_MODE_CFB, $iv);
+					$out = $iv . $str;
 					break;
 			endswitch;
-			return base64_encode($str);
+			return base64_encode($out);
 		}
 
 		/**
@@ -132,20 +153,44 @@ namespace FFPL {
 		 * @return string plain Text
 		 * */
 		final public static function decrypt($str, $key) {
+			$input = base64_decode($str);
+			$key_decoded = base64_decode($key);
+			
+			$key_size = strlen($key_decoded);
+			$cipher_key_size = mcrypt_get_key_size(self::$algo, self::$mode);
+			if ($key_size < $cipher_key_size) :
+				switch($cipher_key_size) :
+					case '24' :
+						$key_decoded = mhash(MHASH_TIGER, $key_decoded);
+						break;
+					case '32' :
+						$key_decoded = mhash(MHASH_SHA256, $key_decoded);
+						break;
+					case '56' :
+						$key_decoded = mhash(MHASH_RIPEMD320, $key_decoded).mhash(MHASH_RIPEMD128, $key_decoded) ;
+						break;
+				endswitch;
+			endif;
 			switch(self::$mode) :
 				case 'ecb' :
-					$str = mcrypt_decrypt(self::$algo, base64_decode($key), base64_decode($str), MCRYPT_MODE_ECB);
+					$out = mcrypt_decrypt(self::$algo, $key_decoded, $input, MCRYPT_MODE_ECB);
 					break;
 				case 'cbc' :
-					$str = base64_decode(mcrypt_decrypt(self::$algo, $key, $str, MCRYPT_MODE_CBC));
+					$iv_size = mcrypt_get_iv_size(self::$algo, MCRYPT_MODE_CBC);
+					$iv_dec = substr($input, 0, $iv_size);
+					$input = substr($input, $iv_size);
+					$out = mcrypt_decrypt(self::$algo, $key_decoded, $input, MCRYPT_MODE_CBC, $iv_dec);
 					break;
 				case 'cfb' :
-					$str = base64_decode(mcrypt_decrypt(self::$algo, $key, $str, MCRYPT_MODE_CFB));
+					$iv_size = mcrypt_get_iv_size(self::$algo, MCRYPT_MODE_CFB);
+					$iv_dec = substr($input, 0, $iv_size);
+					$input = substr($input, $iv_size);
+					$out = mcrypt_decrypt(self::$algo, $key_decoded, $input, MCRYPT_MODE_CFB, $iv_dec);
 					break;
 			endswitch;
 			$block = mcrypt_get_block_size(self::$algo, self::$mode);
-			$pad = ord($str[($len = strlen($str)) - 1]);
-			return substr($str, 0, strlen($str) - $pad);
+			$pad = ord($out[($len = strlen($out)) - 1]);
+			return substr($out, 0, strlen($out) - $pad);
 		}
 
 		/**
