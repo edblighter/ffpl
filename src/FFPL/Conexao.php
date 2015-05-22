@@ -395,7 +395,6 @@ namespace FFPL {
 				else :
 					$parts = explode(" ", $where[0]);
 					$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], $parts[2]);
-					Utils::debugMulti($string);
 				endif;
 			endif;
 			if (array_key_exists("ORDER BY", $terms)) :
