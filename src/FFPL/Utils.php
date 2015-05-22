@@ -81,11 +81,11 @@ namespace FFPL {
 		 * @return string base64 of the key
 		 **/
 		final public function decodeKey($key) {
-			$k = base64_decode($key);
-			$t = explode("@@", $k);
+			$t = explode("@@", base64_decode($key));
+			if(sizeof($t)<2)
+				return false;
 			$key = base64_decode($t[1]);
 			$string = base64_decode($t[0]);
-
 			for ($i = 0; $i < strlen($string); $i++)
 				for ($j = 0; $j < strlen($key); $j++)
 					$string[$i] = $key[$j] ^ $string[$i];
