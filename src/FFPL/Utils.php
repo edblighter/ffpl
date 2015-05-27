@@ -37,7 +37,7 @@ namespace FFPL {
 		/** @var mixed Accepts multi vars to debug
 		 * 	@return String Returns the var_dump of the variables
 		 **/
-		public static function debugMulti() {
+		public static function d() {
 			echo "<pre>";
 			$num = 0;
 			foreach (func_get_args() as $k) :
