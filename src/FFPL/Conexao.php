@@ -169,10 +169,8 @@ namespace FFPL {
 		 **/
 		public function connect() {
 			try {
-				if (self::$conexao == null) :
-					self::$conexao = new \PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(\PDO::ATTR_PERSISTENT => TRUE));
-					self::$conexao -> setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-				endif;
+				self::$conexao = new \PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(\PDO::ATTR_PERSISTENT => TRUE));
+				self::$conexao -> setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 			} catch(\PDOException $error) {
 				array_push(self::$msg, $error -> getMessage());
 				return false;
