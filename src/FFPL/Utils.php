@@ -16,6 +16,8 @@ namespace FFPL {
 	 * */
 	use FFPL\Crypt;
 	class Utils extends Crypt {
+		static $known_mime_types = array('txt' => 'text/plain', 'html' => 'text/html', 'htm' => 'text/html', 'php' => 'text/plain', 'css' => 'text/css', 'js' => 'application/x-javascript', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif', 'png' => 'image/png', 'bmp' => 'image/bmp', 'tif' => 'image/tiff', 'tiff' => 'image/tiff', 'doc' => 'application/msword', 'docx' => 'application/msword', 'xls' => 'application/excel', 'xlsx' => 'application/excel', 'ppt' => 'application/powerpoint', 'pptx' => 'application/powerpoint', 'pdf' => 'application/pdf', 'wmv' => 'application/octet-stream', 'mpg' => 'video/mpeg', 'mov' => 'video/quicktime', 'mp4' => 'video/quicktime', 'zip' => 'application/zip', 'rar' => 'application/x-rar-compressed', 'dmg' => 'application/x-apple-diskimage', 'exe' => 'application/octet-stream');
+		static $image_mime_types = array('jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif', 'png' => 'image/png', 'bmp' => 'image/bmp', 'tif' => 'image/tiff', 'tiff' => 'image/tiff');
 		/**
 		 * Starts the contructor. If you will use the crypto function you have to set the
 		 * parameters which you will need.
@@ -49,15 +51,147 @@ namespace FFPL {
 			echo "</pre>";
 		}
 
+		public function eraseFile($path, $fileName) {
+			$fullPath = $path . $name;
+			if (is_dir($path)) :
+				if (is_file($fullPath)) :
+					if (@unlink($fullPath))
+						return true;
+				endif;
+			endif;
+			return false;
+		}
+
+		public function filesToVector($toVector) {
+			$vector = array();
+			$i = 0;
+			foreach ($toVector as $key => $value) :
+				foreach ($value as $val) :
+					$vector[$i][$key] = $val;
+					$i++;
+				endforeach;
+				$i = 0;
+			endforeach;
+			return $vector;
+		}
+
+		public function geraThumb($fullPathImage, $fullPathOutput, $new_width) {
+			$source = imagecreatefromstring(file_get_contents($fullPathImage));
+			list($width, $height) = getimagesize($fullPathImage);
+			if ($width > $new_width) :
+				$new_height = ($new_width / $width) * $height;
+				$thumb = imagecreatetruecolor($new_width, $new_height);
+				imagecopyresampled($thumb, $source, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+				if (imagejpeg($thumb, $fullPathOutput, 100)) :
+					return true;
+				endif;
+			else :
+				if (copy($photo, $output))
+					return true;
+			endif;
+			return false;
+		}
+
+		private function image_create_gd($path = '') {
+			$image_type = pathinfo($path, PATHINFO_EXTENSION);
+			switch ($image_type) {
+				case 'gif' :
+					if (!function_exists('imagecreatefromgif'))
+						return false;
+					return imagecreatefromgif($path);
+					break;
+				case 'jpg' :
+					if (!function_exists('imagecreatefromjpeg'))
+						return false;
+					return imagecreatefromjpeg($path);
+					break;
+				case 'png' :
+					if (!function_exists('imagecreatefrompng'))
+						return false;
+					return imagecreatefrompng($path);
+					break;
+			}
+			return false;
+		}
+
+		private function overlay_watermark($fullPathImagem, $fullPathOverlay, $options = array('opacity'=>20,'output_quality','overwrite'=>true,'output_path'=>'')) {
+			if (!function_exists('imagecolortransparent')) :
+				return false;
+			endif;
+
+			//  Fetch watermark image properties
+			list($wm_width, $wm_height) = getimagesize($fullPathOverlay);
+			//  Create two image resources
+			$wm_img = $this -> image_create_gd($fullPathOverlay);
+			$src_img = $this -> image_create_gd($fullPathImagem);
+
+			//ajustar os tamanhos da marca para os tamanhos da img.
+			list($img_width, $img_height) = getimagesize($fullPathImagem);
+			$wm_width_adj = $img_width / 5;
+			$wm_height_adj = $img_height / 7;
+
+			$image_p = imagecreatetruecolor($wm_width_adj, $wm_height_adj);
+
+			imagecopyresampled($image_p, $wm_img, 0, 0, 0, 0, $wm_width_adj, $wm_height_adj, $wm_width, $wm_height);
+
+			@imagealphablending($src_img, true);
+			$x_axis = 0;
+			$y_axis = 0;
+
+			//for a matricial 5x7 overlayer
+			for ($i = 0; $i < 5; $i++)
+				for ($j = 0; $j < 7; $j++)
+					imagecopymerge($src_img, $image_p, $x_axis + ($i * $wm_width_adj), $y_axis + ($j * $wm_height_adj), 0, 0, $wm_width_adj, $wm_height_adj, $options['opacity']);
+
+			if ($options['overwrite'])
+				@imagejpeg($src_img, $fullPathImagem, $options['output_quality']);
+			else if (!empty($options['output_path']))
+				@imagejpeg($src_img, $options['output_path'], $options['output_quality']);
+			else
+				return false;
+
+			imagedestroy($src_img);
+			imagedestroy($wm_img);
+			return true;
+		}
+		/**
+		 * Convert bytes into human readable file size
+		 * @var string value in bytes
+		 * @return string human readable file size
+		 * */
+		public function fileSizeConvert($bytes) {
+			$bytes = floatval($bytes);
+			$arBytes = array(0 => array("UNIT" => "TB", "VALUE" => pow(1024, 4)), 1 => array("UNIT" => "GB", "VALUE" => pow(1024, 3)), 2 => array("UNIT" => "MB", "VALUE" => pow(1024, 2)), 3 => array("UNIT" => "KB", "VALUE" => 1024), 4 => array("UNIT" => "B", "VALUE" => 1), );
+
+			foreach ($arBytes as $arItem) {
+				if ($bytes >= $arItem["VALUE"]) {
+					$result = $bytes / $arItem["VALUE"];
+					$result = str_replace(".", ",", strval(round($result, 2))) . " " . $arItem["UNIT"];
+					break;
+				}
+			}
+			return $result;
+		}
+
 		public static function generateSalt() {
 			return hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
 		}
 
+		/**
+		 * Hashes a passoword using a salt in SHA-512
+		 *
+		 * @var string Password
+		 * @var string Salt to hash the string password
+		 * @return string in SHA-512 hash
+		 * */
 		public static function hashPassword($password, $random_salt) {
 			return hash('sha512', $password . $random_salt);
 		}
 
 		/**
+		 * This function will encode de key password from a database string encode to be
+		 * saved in file or database
+		 *
 		 * @var string plain text of key
 		 * @return string base64 of the key coded
 		 **/
@@ -82,7 +216,7 @@ namespace FFPL {
 		 **/
 		final public function decodeKey($key) {
 			$t = explode("@@", base64_decode($key));
-			if(sizeof($t)<2)
+			if (sizeof($t) < 2)
 				return false;
 			$key = base64_decode($t[1]);
 			$string = base64_decode($t[0]);
