@@ -385,14 +385,24 @@ namespace FFPL {
 								if (is_numeric($parts[2])) :
 									$string .= sprintf("`%s` %s %d", $parts[0], $parts[1], $parts[2]);
 								else :
-									$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], $parts[2]);
+									$tam = sizeof($parts);
+									if ($tam > 3) :
+										$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], implode(" ", array_slice($parts, 2)));
+									else :
+										$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], $parts[2]);
+									endif;
 								endif;
 							endif;
 						endif;
 					endfor;
 				else :
 					$parts = explode(" ", $where[0]);
-					$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], $parts[2]);
+					$tam = sizeof($parts);
+					if ($tam > 3) :
+						$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], implode(" ", array_slice($parts, 2)));
+					else :
+						$string .= sprintf("`%s` %s '%s'", $parts[0], $parts[1], $parts[2]);
+					endif;
 				endif;
 			endif;
 			if (array_key_exists("ORDER BY", $terms)) :

@@ -62,6 +62,13 @@ namespace FFPL {
 			return false;
 		}
 
+		public function eraseFiles($path, array $fileNames) {
+			foreach ($fileNames as $fileName) :
+				$this -> eraseFile($path, $fileName);
+			endforeach;
+			return false;
+		}
+
 		public function filesToVector($toVector) {
 			$vector = array();
 			$i = 0;
@@ -154,6 +161,7 @@ namespace FFPL {
 			imagedestroy($wm_img);
 			return true;
 		}
+
 		/**
 		 * Convert bytes into human readable file size
 		 * @var string value in bytes
