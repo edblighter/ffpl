@@ -51,7 +51,17 @@ namespace FFPL {
 			echo "</pre>";
 		}
 
-		public function eraseFile($path, $fileName) {
+		public static function is_image_test($fullPath) {
+			$extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+			return in_array($extension, self::$image_mime_types);
+		}
+
+		public static function is_image($fullPath) {
+			$k = strtolower(finfo_file(finfo_open(FILEINFO_MIME_TYPE), $fullPath));
+			return in_array($k, self::$image_mime_types);
+		}
+
+		public static function eraseFile($path, $fileName) {
 			$fullPath = $path . $name;
 			if (is_dir($path)) :
 				if (is_file($fullPath)) :
@@ -62,14 +72,14 @@ namespace FFPL {
 			return false;
 		}
 
-		public function eraseFiles($path, array $fileNames) {
+		public static function eraseFiles($path, array $fileNames) {
 			foreach ($fileNames as $fileName) :
 				$this -> eraseFile($path, $fileName);
 			endforeach;
 			return false;
 		}
 
-		public function filesToVector($toVector) {
+		public static function filesToVector($toVector) {
 			$vector = array();
 			$i = 0;
 			foreach ($toVector as $key => $value) :
@@ -82,7 +92,7 @@ namespace FFPL {
 			return $vector;
 		}
 
-		public function geraThumb($fullPathImage, $fullPathOutput, $new_width) {
+		public static function geraThumb($fullPathImage, $fullPathOutput, $new_width) {
 			$source = imagecreatefromstring(file_get_contents($fullPathImage));
 			list($width, $height) = getimagesize($fullPathImage);
 			if ($width > $new_width) :
@@ -167,7 +177,7 @@ namespace FFPL {
 		 * @var string value in bytes
 		 * @return string human readable file size
 		 * */
-		public function fileSizeConvert($bytes) {
+		public static function fileSizeConvert($bytes) {
 			$bytes = floatval($bytes);
 			$arBytes = array(0 => array("UNIT" => "TB", "VALUE" => pow(1024, 4)), 1 => array("UNIT" => "GB", "VALUE" => pow(1024, 3)), 2 => array("UNIT" => "MB", "VALUE" => pow(1024, 2)), 3 => array("UNIT" => "KB", "VALUE" => 1024), 4 => array("UNIT" => "B", "VALUE" => 1), );
 
@@ -181,6 +191,16 @@ namespace FFPL {
 			return $result;
 		}
 
+		public
+		/**
+		 * This functions generate a random salt using sha512 hash
+
+
+		 *
+		 * @ return string A sha512 random hash
+
+
+		 * */
 		public static function generateSalt() {
 			return hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
 		}
