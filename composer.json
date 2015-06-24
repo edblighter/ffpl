@@ -12,7 +12,9 @@
 	],
 	"minimum-stability": "alpha",
 	"require": {
-		"php": ">=5.3"
+		"php": ">=5.3",
+		"setasign/fpdf": "1.7",
+		"setasign/fpdi": "1.5.4"
 	},
 	"autoload": {
 		"psr-4": {
