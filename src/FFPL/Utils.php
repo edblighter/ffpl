@@ -324,7 +324,6 @@ namespace FFPL {
 						$fpdi -> _tplIdx = $fpdi -> importPage($i);
 						$fpdi -> AddPage();
 						$fpdi -> useTemplate($fpdi -> _tplIdx, 0, 0, $width, $height);
-
 					endif;
 				endwhile;
 			endif;
