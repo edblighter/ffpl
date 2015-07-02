@@ -121,7 +121,7 @@ namespace FFPL {
 		 * @return boolean Return true if erase is ok, false if any error occur
 		 * */
 		public static function eraseFile($path, $fileName) {
-			$fullPath = $path . $name;
+			$fullPath = $path . $fileName;
 			if (is_dir($path)) :
 				if (is_file($fullPath)) :
 					if (@unlink($fullPath))
