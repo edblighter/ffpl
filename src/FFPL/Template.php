@@ -502,6 +502,15 @@ namespace FFPL {
 		}
 
 		/**
+		 * Return all vars utilized in this instance
+		 *
+		 * @return array
+		 */
+		public function templateVars() {
+			return get_object_vars($this);
+		}
+
+		/**
 		 * Returns the final content
 		 *
 		 * @return    string
