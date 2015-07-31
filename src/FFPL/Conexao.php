@@ -137,6 +137,10 @@ namespace FFPL {
 			else :
 				self::$options['fetch_mode'] = $options['fetch_mode'];
 			endif;
+			if(!empty($options['set_utf'])):
+				 self::$options['set_utf']=true;
+			endif;
+			
 			if ((self::$u64key = self::getFileKey($key)) === false) :
 				return false;
 			endif;
@@ -169,8 +173,14 @@ namespace FFPL {
 		 **/
 		public function connect() {
 			try {
-				self::$conexao = new \PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(\PDO::ATTR_PERSISTENT => TRUE));
+				if(isset(self::$options['set_utf']) && self::$options['set_utf'] === true):
+					self::$conexao = new \PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(\PDO::ATTR_PERSISTENT => TRUE,\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+				else:
+					self::$conexao = new \PDO(trim(self::$databaseData[0]), trim(self::$databaseData[1]), trim(self::$databaseData[2]), array(\PDO::ATTR_PERSISTENT => TRUE));	
+				endif;
+				
 				self::$conexao -> setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+				
 			} catch(\PDOException $error) {
 				array_push(self::$msg, $error -> getMessage());
 				return false;
