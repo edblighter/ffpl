@@ -15,7 +15,7 @@
 		"php": ">=5.6",
 		"setasign/fpdf": "1.7",
 		"setasign/fpdi": "1.5.4",
-		"tecnick.com/tcpdf": "dev-master"
+		"tecnick.com/tcpdf": "6.2.11"
 	},
 	"autoload": {
 		"psr-4": {
