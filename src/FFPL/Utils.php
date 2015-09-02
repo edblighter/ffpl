@@ -329,8 +329,15 @@ namespace FFPL {
 			endif;
 			unlink($fullPathPDF);
 			$fpdi -> Output($fullPathPDF, 'F');
-
 		}
+	
+	public static function html2PDF($html){
+		$pdf = new \FPDF('P','mm','A4');
+		$pdf->addPage();
+		$pdf->WriteHTML($html);
+		$pdf->Output("Processos.pdf","D");
+	}
+
 
 	}
 
