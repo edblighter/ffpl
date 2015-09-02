@@ -332,7 +332,7 @@ namespace FFPL {
 		}
 	
 	public static function html2PDF($html){
-		$pdf = new \FPDF('P','mm','A4');
+		$pdf = new \TCPDF();
 		$pdf->addPage();
 		$pdf->WriteHTML($html);
 		$pdf->Output("Processos.pdf","D");

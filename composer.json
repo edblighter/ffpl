@@ -12,9 +12,10 @@
 	],
 	"minimum-stability": "alpha",
 	"require": {
-		"php": ">=5.3",
+		"php": ">=5.6",
 		"setasign/fpdf": "1.7",
-		"setasign/fpdi": "1.5.4"
+		"setasign/fpdi": "1.5.4",
+		"tecnick.com/tcpdf": "dev/master"
 	},
 	"autoload": {
 		"psr-4": {
