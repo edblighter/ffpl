@@ -335,7 +335,6 @@ namespace FFPL {
 		$pdf = new \TCPDF();
 		$pdf->addPage();
 		$pdf->WriteHTML($html);
-		ob_clean();
 		$pdf->Output("Processos.pdf","D");
 	}
 
